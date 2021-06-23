@@ -1,3 +1,9 @@
+/*
+ * ESP8266 Deep sleep mode example
+ * Rui Santos 
+ * Complete Project Details https://randomnerdtutorials.com
+ */
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <VL53L1X.h>
