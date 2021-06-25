@@ -1,0 +1,69 @@
+#include "SPI.h"
+#include "SD.h"
+#include "DHT.h"
+#include "RTClib.h"
+
+#define DHTPIN 7    // used for Arduino
+//#define DHTPIN D4   // used for ESP8266
+
+#define DHTYPE DHT22
+
+const int chipSelect = 10;  // used for Arduino
+//const int chipSelect = D8;  // used for ESP8266
+
+DHT dht(DHTPIN, DHTYPE);
+RTC_DS1307 rtc;
+
+void setup() {
+  Serial.begin(9600);
+  
+  while (!Serial) {
+  }
+
+   if (!rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    while (1);
+  }
+
+  if (!rtc.isrunning()) {
+    Serial.println("RTC lost power, lets set the time!");
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Initialization failed!");
+    while (1);
+  }
+
+  dht.begin();
+}
+
+void loop() {
+  
+  String dataString = "";
+
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  DateTime now = rtc.now();
+
+  dataString += String(now.unixtime());
+  dataString += ",";
+  dataString += String(h);
+  dataString += ",";
+  dataString += String(t);
+  
+  File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+  if (dataFile) {
+    dataFile.println(dataString);
+    dataFile.close();
+    Serial.println(dataString);
+  }
+  
+  else {
+    Serial.println("error opening datalog.txt");
+  }
+
+  delay(2000);
+}
